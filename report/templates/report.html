@@ -1,0 +1,253 @@
+<html>
+<head>
+    <title>{{ title }}</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        img { margin: 20px 0; border: 1px solid #ddd; }
+        .section { margin-bottom: 40px; }
+        .plot {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 20px 0;
+        }
+        table {
+        border-collapse: separate;
+        border-spacing: 30px 5px; /* poziom / pion */
+    }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        .card-wide {
+            grid-column: span 2;
+        }
+        .card > p{
+        font-size: 20px;
+        }
+        .box {
+    display: flex;
+    height: 80%;
+    align-items: center; /* pion */
+}
+
+.plot {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.modal {
+    display: none;
+
+    position: fixed;
+    z-index: 999;
+
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0,0,0,0.85);
+
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    max-width: 95%;
+    max-height: 95%;
+    border-radius: 10px;
+}
+        .plot:hover {
+    transform: scale(1.02);
+}
+        .zoom-hint {
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+    margin-top: 5px;
+}
+</style>
+    <script>
+function openModal(src) {
+    document.getElementById("imgModal").style.display = "flex";
+    document.getElementById("modalImg").src = src;
+}
+
+function closeModal() {
+    document.getElementById("imgModal").style.display = "none";
+}
+</script>
+</head>
+
+<body>
+    <div id="imgModal" class="modal" onclick="closeModal()">
+    <img id="modalImg" class="modal-content">
+</div>
+    <h1>{{ title }}</h1>
+
+    <div class="section">
+
+        <div class="grid">
+            <div class="card">
+                <h3>Statistics</h3>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>File name</td>
+                            <td>{{ stats.file }}</td>
+                        </tr>
+                        <tr>
+                            <td>Loaded records</td>
+                            <td>{{ stats.records }}</td>
+                        </tr>
+                        <tr>
+                            <td>Unique IPs</td>
+                            <td>{{ stats.Unique_IPs }}</td>
+                        </tr>
+                        <tr>
+                            <td>Unique E-mails</td>
+                            <td>{{ stats.Unique_E_mails }}</td>
+                        </tr>
+                        <tr>
+                            <td>Unique Countriess</td>
+                            <td>{{ stats.Unique_Countries }}</td>
+                        </tr>
+                        <tr>
+                            <td>Unique User Agents</td>
+                            <td>{{ stats.Unique_User_Agents }}</td>
+                        </tr>
+                        <tr>
+                            <td>Filled honneypots</td>
+                            <td>{{ stats.Filled_honneypots }}</td>
+                        </tr>
+                        <tr>
+                            <td>Period of analyzed time</td>
+                            <td>{{ stats.Period_of_time }} days</td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+            </div>
+            <div class="card">
+                <h3>Description</h3>
+                <p class="box">{{ conclusions.statistics }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Plots</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>Fill time vs Spam</h3>
+                <img src="{{ images.fill_time }}" class="plot" onclick="openModal(this.src)">
+                <p class="zoom-hint">Click to zoom</p>
+            </div>
+
+            <div class="card">
+                <h3>Conclusions </h3>
+                <p class="box">{{ conclusions.fill_time }}</p>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>Score distribution </h3>
+                <img src="{{ images.score_distribution }}" class="plot" onclick="openModal(this.src)">
+                <p class="zoom-hint">Click to zoom</p>
+            </div>
+            <div class="card">
+                <h3>Conclusions </h3>
+                <p class="box">{{ conclusions.score }}</p>
+            </div>
+
+            <div class="card">
+                <h3>Activity</h3>
+                <img src="{{ images.activity }}" class="plot" onclick="openModal(this.src)">
+                <p class="zoom-hint">Click to zoom</p>
+            </div>
+            <div class="card">
+                <h3>Conclusions </h3>
+                <p class="box">{{ conclusions.activity }}</p>
+            </div>
+
+            <div class="card">
+                <h3>Activity first day example</h3>
+                <img src="{{ images.activity_first }}" class="plot" onclick="openModal(this.src)">
+                <p class="zoom-hint">Click to zoom</p>
+            </div>
+            <div class="card">
+                <h3>Otchers </h3>
+                <ul>
+                    <li>All records: {{ stats.records }}</li>
+                    <li>Unique IP: {{ stats.Unique_IPs }}</li>
+                    <li>RED IP: {{ stats.red_count }} | ({{ stats.red_ip_percentage }}%)</li>
+                    <li>ORANGE IP: {{ stats.orange_count }} | ({{ stats.orange_ip_percentage }}%)</li>
+                </ul>
+
+
+            </div>
+        </div>
+    </div>
+    <div class="section">
+        <div class="card card-wide">
+            <div class="card">
+                    <h2>Top RED ALERT IPs (<a href="https://ipinfo.io/">ipinfo.io</a>)</h2>
+
+                    <table class="ip-table">
+                        <tr>
+                            <th>IP</th>
+                            <th>Count</th>
+                            <th>Country</th>
+                            <th>Hostname</th>
+                            <th>City</th>
+                            <th>Region</th>
+                            <th>Loc</th>
+                            <th>Org</th>
+                            <th>Postal</th>
+                            <th>Timezone</th>
+                        </tr>
+
+                        {% for ip, data in top10_analyze.items() %}
+                        <tr>
+                            <td>{{ ip }}</td>
+                            <td>{{ top_10_ips[ip] }}</td>
+                            <td>{{ data.country }}</td>
+                            <td>{{ data.hostname }}</td>
+                            <td>{{ data.city }}</td>
+                            <td>{{ data.region }}</td>
+                            <td>{{ data.loc }}</td>
+                            <td>{{ data.org }}</td>
+                            <td>{{ data.postal }}</td>
+                            <td>{{ data.timezone }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Summary</h2>
+        <p style="font-size: 26px;">{{ conclusions.summary }}</p>
+    </div>
+
+</body>
+</html>

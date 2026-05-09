@@ -1,0 +1,318 @@
+<html>
+<head>
+    <title>Network Traffic Data Analysis Report.</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        img { margin: 20px 0; border: 1px solid #ddd; }
+        .section { margin-bottom: 40px; }
+        .plot {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 20px 0;
+        }
+        table {
+        border-collapse: separate;
+        border-spacing: 30px 5px; /* poziom / pion */
+    }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        .card-wide {
+            grid-column: span 2;
+        }
+        .card > p{
+        font-size: 20px;
+        }
+        .box {
+    display: flex;
+    height: 80%;
+    align-items: center; /* pion */
+}
+
+.plot {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.modal {
+    display: none;
+
+    position: fixed;
+    z-index: 999;
+
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0,0,0,0.85);
+
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    max-width: 95%;
+    max-height: 95%;
+    border-radius: 10px;
+}
+        .plot:hover {
+    transform: scale(1.02);
+}
+        .zoom-hint {
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+    margin-top: 5px;
+}
+</style>
+    <script>
+function openModal(src) {
+    document.getElementById("imgModal").style.display = "flex";
+    document.getElementById("modalImg").src = src;
+}
+
+function closeModal() {
+    document.getElementById("imgModal").style.display = "none";
+}
+</script>
+</head>
+
+<body>
+    <div id="imgModal" class="modal" onclick="closeModal()">
+    <img id="modalImg" class="modal-content">
+</div>
+    <h1>Network Traffic Data Analysis Report.</h1>
+
+    <div class="section">
+
+        <div class="grid">
+            <div class="card">
+                <h3>Statistics</h3>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>File name</td>
+                            <td>submissions.csv</td>
+                        </tr>
+                        <tr>
+                            <td>Loaded records</td>
+                            <td>10000</td>
+                        </tr>
+                        <tr>
+                            <td>Unique IPs</td>
+                            <td>69</td>
+                        </tr>
+                        <tr>
+                            <td>Unique E-mails</td>
+                            <td>40</td>
+                        </tr>
+                        <tr>
+                            <td>Unique Countriess</td>
+                            <td>8</td>
+                        </tr>
+                        <tr>
+                            <td>Unique User Agents</td>
+                            <td>8</td>
+                        </tr>
+                        <tr>
+                            <td>Filled honneypots</td>
+                            <td>1400</td>
+                        </tr>
+                        <tr>
+                            <td>Period of analyzed time</td>
+                            <td>30 days</td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+            </div>
+            <div class="card">
+                <h3>Description</h3>
+                <p class="box">Analyzed period of 30 days and 10000 records, loaded from submissions.csv file.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Plots</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>Fill time vs Spam</h3>
+                <img src="report/plots/fill_time_vs_spam.png" class="plot" onclick="openModal(this.src)">
+                <p class="zoom-hint">Click to zoom</p>
+            </div>
+
+            <div class="card">
+                <h3>Conclusions </h3>
+                <p class="box">The fill-time distribution is multimodal, indicating at least three distinct behavioral populations: automated submissions (<5s), fast interactions (5–10s), and normal user behavior (>30s). The presence of a stable peak  around 5–10 seconds suggests legitimate rapid users rather than misclassified bots.</p>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>Score distribution </h3>
+                <img src="report/plots/score_distribution.png" class="plot" onclick="openModal(this.src)">
+                <p class="zoom-hint">Click to zoom</p>
+            </div>
+            <div class="card">
+                <h3>Conclusions </h3>
+                <p class="box">The score distribution reveals two distinct high-risk clusters, suggesting the presence of at least two different spam strategies: low-effort automated submissions and more sophisticated adaptive bots attempting to mimic human behavior.</p>
+            </div>
+
+            <div class="card">
+                <h3>Activity</h3>
+                <img src="report/plots/activity_over_time.png" class="plot" onclick="openModal(this.src)">
+                <p class="zoom-hint">Click to zoom</p>
+            </div>
+            <div class="card">
+                <h3>Conclusions </h3>
+                <p class="box">The activity over time shows a highly irregular but continuous pattern of submissions, with no significant idle periods. Multiple recurring spikes (up to ~35 submissions per interval) suggest automated or semi-automated batch submissions rather than organic user behavior. The absence of clear daily or weekly human activity cycles indicates that a substantial portion of traffic is likely non-human. The pattern is consistent with distributed bot activity or scheduled spam campaigns operating at low but persistent intensity. Overall, the system is exposed to continuous background bot traffic with periodic bursts of higher intensity.</p>
+            </div>
+
+            <div class="card">
+                <h3>Activity first day example</h3>
+                <img src="report/plots/activity_first_day.png" class="plot" onclick="openModal(this.src)">
+                <p class="zoom-hint">Click to zoom</p>
+            </div>
+            <div class="card">
+                <h3>Otchers </h3>
+                <ul>
+                    <li>All records: 10000</li>
+                    <li>Unique IP: 69</li>
+                    <li>RED IP: 1400 | (14.0%)</li>
+                    <li>ORANGE IP: 148 | (1%)</li>
+                </ul>
+
+
+            </div>
+        </div>
+    </div>
+    <div class="section">
+        <div class="card card-wide">
+            <div class="card">
+                    <h2>Top RED ALERT IPs (<a href="https://ipinfo.io/">ipinfo.io</a>)</h2>
+
+                    <table class="ip-table">
+                        <tr>
+                            <th>IP</th>
+                            <th>Count</th>
+                            <th>Country</th>
+                            <th>Hostname</th>
+                            <th>City</th>
+                            <th>Region</th>
+                            <th>Loc</th>
+                            <th>Org</th>
+                            <th>Postal</th>
+                            <th>Timezone</th>
+                        </tr>
+
+                        
+                        <tr>
+                            <td>185.220.101.7</td>
+                            <td>281</td>
+                            <td>DE</td>
+                            <td>berlin01.tor-exit.artikel10.org</td>
+                            <td>Berlin</td>
+                            <td>State of Berlin</td>
+                            <td>52.5244,13.4105</td>
+                            <td>AS60729 Stiftung Erneuerbare Freiheit</td>
+                            <td>10119</td>
+                            <td>Europe/Berlin</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>185.220.101.6</td>
+                            <td>266</td>
+                            <td>DE</td>
+                            <td>berlin01.tor-exit.artikel10.org</td>
+                            <td>Berlin</td>
+                            <td>State of Berlin</td>
+                            <td>52.5244,13.4105</td>
+                            <td>AS60729 Stiftung Erneuerbare Freiheit</td>
+                            <td>10119</td>
+                            <td>Europe/Berlin</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>185.220.101.5</td>
+                            <td>253</td>
+                            <td>DE</td>
+                            <td>berlin01.tor-exit.artikel10.org</td>
+                            <td>Berlin</td>
+                            <td>State of Berlin</td>
+                            <td>52.5244,13.4105</td>
+                            <td>AS60729 Stiftung Erneuerbare Freiheit</td>
+                            <td>10119</td>
+                            <td>Europe/Berlin</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>45.33.32.157</td>
+                            <td>208</td>
+                            <td>US</td>
+                            <td></td>
+                            <td>Fremont</td>
+                            <td>California</td>
+                            <td>37.5483,-121.9886</td>
+                            <td>AS63949 Akamai Connected Cloud</td>
+                            <td>94536</td>
+                            <td>America/Los_Angeles</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>198.199.88.1</td>
+                            <td>199</td>
+                            <td>US</td>
+                            <td></td>
+                            <td>North Bergen</td>
+                            <td>New Jersey</td>
+                            <td>40.8043,-74.0121</td>
+                            <td>AS14061 DigitalOcean, LLC</td>
+                            <td>07047</td>
+                            <td>America/New_York</td>
+                        </tr>
+                        
+                        <tr>
+                            <td>45.33.32.156</td>
+                            <td>193</td>
+                            <td>US</td>
+                            <td>scanme.nmap.org</td>
+                            <td>Fremont</td>
+                            <td>California</td>
+                            <td>37.5483,-121.9886</td>
+                            <td>AS63949 Akamai Connected Cloud</td>
+                            <td>94536</td>
+                            <td>America/Los_Angeles</td>
+                        </tr>
+                        
+                    </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Summary</h2>
+        <p style="font-size: 26px;">There are 1,400 IP addresses with a high probability of spam activity. Blocking these IPs would reduce traffic by 14%.</p>
+    </div>
+
+</body>
+</html>
