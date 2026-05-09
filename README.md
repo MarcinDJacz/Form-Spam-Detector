@@ -12,5 +12,8 @@ More and more junk is coming through our contact form—bots, strange emails, th
 ## Directory for files to analyze: 
 /data/
 
+## Where plots are placed:
+/report/plots/
+
 ### conclusions_pattern.py 
 -> how conclusions.py should look
