@@ -2,12 +2,13 @@ import argparse
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-
+import matplotlib.dates as mdates
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 
 from analyze_ip import analyze_ip_list
-from generate_report import generate_report, print_report
+from generate_report import generate_report
 from report.get_top import get_top_red_ips
 
 MAX_GREEN = 20
@@ -62,8 +63,6 @@ def add_features_and_score(df):
     return df
 
 
-
-
 def plot_score_distribution(df):
     score_counts = df["score"].value_counts().sort_index()
 
@@ -89,12 +88,19 @@ def plot_score_distribution(df):
 
     plt.grid(True, axis="y", alpha=0.3)
     plt.xticks(range(0, max(score_counts.index) + 1, 10))
+    legend_elements = [
+        Patch(facecolor="green", label=f"Safe (< {MAX_GREEN})"),
+        Patch(facecolor="orange", label=f"False alarm / Suspicious ({MAX_GREEN}-{MAX_ORANGE - 1})"),
+        Patch(facecolor="red", label=f"Likely spam (>= {MAX_ORANGE})")
+    ]
+
+    plt.legend(handles=legend_elements)
     plt.savefig("report/plots/score_distribution.png", dpi=300, bbox_inches="tight")
-    # plt.show()
+    plt.close()
 
 def plot_fill_time_vs_spam(df):
-    RED_MAX_FILL_TIME = 2
-    ORAGNE_MAX_FILL_TIME = 5
+    RED_MAX_FILL_TIME = 5
+    ORAGNE_MAX_FILL_TIME = 10
     fill_time_counts = df["form_fill_time_sec"].value_counts().sort_index()
 
     plt.figure(figsize=(12, 5))
@@ -117,8 +123,17 @@ def plot_fill_time_vs_spam(df):
 
     plt.grid(True, axis="y", alpha=0.3)
     plt.xticks(range(0, max(fill_time_counts.index) + 1, 50))
+
+    legend_elements = [
+        Patch(facecolor="red", label=f"Likely spam (< {RED_MAX_FILL_TIME}s.)"),
+        Patch(facecolor="orange", label=f"Suspicious:({RED_MAX_FILL_TIME}-{ORAGNE_MAX_FILL_TIME}s.)"),
+        Patch(facecolor="green", label=f"Safe (>= {ORAGNE_MAX_FILL_TIME}s.)")
+    ]
+
+    plt.legend(handles=legend_elements)
+
     plt.savefig("report/plots/fill_time_vs_spam.png", dpi=300, bbox_inches="tight")
-    # plt.show()
+    plt.close()
 
 def plot_activity_over_time(df):
     activity = df.set_index("timestamp").resample("h").size()
@@ -143,7 +158,95 @@ def plot_activity_over_time(df):
     plt.grid(True, axis="y", alpha=0.3)
     plt.xticks(rotation=45)
     plt.savefig("report/plots/activity_over_time.png", dpi=300, bbox_inches="tight")
-    # plt.show()
+    plt.close()
+
+def plot_activity_over_last_6_days(df):
+    df = df[
+        df["timestamp"] >=
+        df["timestamp"].max() - pd.Timedelta(days=6)
+    ]
+
+    activity = (
+        df.set_index("timestamp")
+        .resample("h")
+        .size()
+        .rename("count")
+        .to_frame()
+    )
+
+    activity["hour"] = activity.index.hour
+
+    hourly_stats = (
+        activity.groupby("hour")["count"]
+        .agg(["mean", "std"])
+        .fillna(0)
+    )
+
+    activity["mean"] = activity["hour"].map(hourly_stats["mean"])
+    activity["std"] = activity["hour"].map(hourly_stats["std"])
+
+    activity["upper"] = activity["mean"] + 2 * activity["std"]
+    activity["lower"] = (activity["mean"] - 2 * activity["std"]).clip(lower=0)
+
+    anomalies = activity[activity["count"] > activity["upper"]]
+
+    colors = [
+        "red" if val > upper else
+        "orange" if val > mean else
+        "green"
+        for val, upper, mean in zip(
+            activity["count"],
+            activity["upper"],
+            activity["mean"]
+        )
+    ]
+
+    plt.figure(figsize=(14, 6))
+
+    plt.bar(
+        activity.index,
+        activity["count"],
+        color=colors,
+        width=0.03,
+        label="Activity"
+    )
+
+    plt.plot(activity.index, activity["mean"], linewidth=2, label="Hourly mean")
+
+    plt.fill_between(
+        activity.index,
+        activity["lower"],
+        activity["upper"],
+        alpha=0.2,
+        label="Normal range (±2 std)"
+    )
+
+    plt.scatter(anomalies.index, anomalies["count"], s=40, label="Anomaly")
+
+    # 1. X-axis: tylko godziny, co 3h
+    plt.gca().xaxis.set_major_locator(mdates.HourLocator(interval=4))
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+
+    # 2. Linie pionowe = zmiana dnia
+    days = activity.index.normalize().unique()
+    for day in days:
+        plt.axvline(day, color="gray", linestyle="--", alpha=0.3)
+
+    plt.title("Activity over time with anomaly detection")
+    plt.xlabel("Hour of day")
+    plt.ylabel("Number of submissions")
+
+    plt.grid(True, axis="y", alpha=0.3)
+    plt.xticks(rotation=90)
+
+    plt.legend()
+
+    plt.savefig(
+        "report/plots/activity_over_last_6_days.png",
+        dpi=300,
+        bbox_inches="tight"
+    )
+    plt.close()
 
 
 def plot_activity_first_day(df):
@@ -182,7 +285,7 @@ def plot_activity_first_day(df):
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.savefig("report/plots/activity_first_day.png", dpi=300, bbox_inches="tight")
-    # plt.show()
+    plt.close()
 
 
 def main():
@@ -222,9 +325,10 @@ def main():
     plot_fill_time_vs_spam(df)
     plot_activity_over_time(df)
     plot_activity_first_day(df)
+    plot_activity_over_last_6_days(df)
 
     t4 = time.time()
-    print(f"[OK] Generated 4 plots in {t4 - t3:.3f}s")
+    print(f"[OK] Generated 5 plots in {t4 - t3:.3f}s")
 
     top_10_ips = get_top_red_ips(df)
     list = top_10_ips.index.tolist()

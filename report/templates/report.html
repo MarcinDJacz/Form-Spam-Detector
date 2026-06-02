@@ -175,7 +175,21 @@ function closeModal() {
             </div>
             <div class="card">
                 <h3>Conclusions </h3>
-                <p class="box">{{ conclusions.score }}</p>
+                <p>{{ conclusions.score }}</p>
+                <hr>
+                <h4>Scoring:</h4>
+                <table>
+                    <tbody>
+                    {% for flag, pkt in scoring.items() %}
+                        <tr>
+                            <td>{{ flag }}</td>
+                            <td>{{ pkt }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <h4>Scoring explanation:</h4>
+                <p>{{ Scoring_explanation }}</p>
             </div>
 
             <div class="card">
@@ -189,12 +203,22 @@ function closeModal() {
             </div>
 
             <div class="card">
+                <h3>Activity of last max 6 days</h3>
+                <img src="{{ images.activity_6_days }}" class="plot" onclick="openModal(this.src)">
+                <p class="zoom-hint">Click to zoom</p>
+            </div>
+            <div class="card">
+                <h3>Conclusions </h3>
+                <p class="box">{{ conclusions.activity_6_days }}</p>
+            </div>
+
+            <div class="card">
                 <h3>Activity first day example</h3>
                 <img src="{{ images.activity_first }}" class="plot" onclick="openModal(this.src)">
                 <p class="zoom-hint">Click to zoom</p>
             </div>
             <div class="card">
-                <h3>Otchers </h3>
+                <h3>Others </h3>
                 <ul>
                     <li>All records: {{ stats.records }}</li>
                     <li>Unique IP: {{ stats.Unique_IPs }}</li>
