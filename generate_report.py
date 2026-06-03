@@ -30,9 +30,21 @@ def generate_report(df, top10_analyze, filename):
 
         }
 
+    scoring = {"Honeypot flag": "+100pkt",
+               "User agent (python-request / SEObot)": "+70pkt",
+               "Fast submit ( < 3s )": "+20pkt",
+    }
+    Scoring_explanation = "The honeypot flag (a frontend form field hidden from regular users)"\
+                          " is considered a strong warning signal, although it is not always definitive due to browser"\
+                          " autocomplete behavior.\nThe user agents 'python-requests' and 'SEObot' are treated as strong"\
+                          " warning signals, as they commonly indicate automated or scripted activity.\nVery fast form "\
+                          "submission time (< 3 seconds) is treated as a mild warning signal, since it may also result "\
+                          "from autocomplete usage or accidental browser/session behavior."
+
     images = {
         "activity_first": "report/plots/activity_first_day.png",
         "activity": "report/plots/activity_over_time.png",
+        "activity_6_days": "report/plots/activity_over_last_6_days.png",
         "fill_time": "report/plots/fill_time_vs_spam.png",
         "score_distribution": "report/plots/score_distribution.png",
     }
@@ -53,7 +65,9 @@ def generate_report(df, top10_analyze, filename):
         images=images,
         conclusions=conclusions,
         top_10_ips=top_10_ips,
-        top10_analyze=top10_analyze
+        top10_analyze=top10_analyze,
+        scoring=scoring,
+        Scoring_explanation=Scoring_explanation
     )
 
     with open("complete_report.html", "w", encoding="utf-8") as f:
